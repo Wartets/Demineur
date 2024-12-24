@@ -7,6 +7,7 @@ let timerInterval = null;
 let startTime = null;
 let bestTime = null;
 let safeClicksRemaining = 0;
+let flagsPlaced = 0;
 
 function initializeGame() {
 	const game = document.getElementById('game');
@@ -160,6 +161,9 @@ function toggleFlag(row, col) {
 	cell.flagged = !cell.flagged;
 	cell.element.classList.toggle('flag');
 	cell.element.textContent = cell.flagged ? '🚩' : '';
+	
+	flagsPlaced = cell.flagged ? flagsPlaced + 1 : flagsPlaced - 1;
+	document.getElementById('flagCount').textContent = `Drapeaux : ${flagsPlaced}/${minesCount}`;
 }
 
 function revealAllMines() {

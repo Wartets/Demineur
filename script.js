@@ -6,7 +6,6 @@ let gameOver = false;
 let timerInterval = null;
 let startTime = null;
 let bestTime = null;
-let safeClicksRemaining = 0;
 let flagsPlaced = 0;
 
 function initializeGame() {
@@ -23,7 +22,9 @@ function initializeGame() {
 	clearInterval(timerInterval);
 	document.getElementById('time').textContent = 'Temps : 0.00s';
 	startTime = null;
-	safeClicksRemaining = Math.random() < 0.5 ? 2 : 3;
+	
+	let flagsPlaced = 0;
+	document.getElementById('flagCount').textContent = `Drapeaux : ${flagsPlaced}/${minesCount}`;
 
 	game.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
 	game.style.gridTemplateRows = `repeat(${rows}, 30px)`;
@@ -193,3 +194,130 @@ function checkWin() {
 }
 
 initializeGame();
+
+function cheatGame() {
+	if (gameOver) return;
+
+	for (let r = 0; r < rows; r++) {
+		for (let c = 0; c < cols; c++) {
+			const cell = gameBoard[r][c];
+			if (cell.mine && !cell.flagged) {
+				toggleFlag(r, c);
+			}
+			if (!cell.mine && !cell.revealed) {
+				revealCell(r, c);
+			}
+		}
+	}
+}
+
+function solveGame() {
+    if (gameOver) return;
+
+    let revealed = 0;
+    let flagged = 0;
+    let lastFlaggedCount = flagsPlaced;
+
+    function nextMove() {
+        if (revealed >= (rows * cols - minesCount) || gameOver) {
+            checkWin();
+            return;
+        }
+
+        let madeMove = false;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const cell = gameBoard[r][c];
+                if (cell.revealed || cell.flagged) continue;
+				
+				if (cell.mine) {
+					toggleFlag(r, c);
+					flagged++;
+				}
+
+                if (cell.adjacentMines > 0 && !cell.mine && !cell.revealed) {
+                    revealCell(r, c);
+                    revealed++;
+                    madeMove = true;
+                    break;
+                }
+
+                if (cell.adjacentMines === 0 && !cell.mine && !cell.revealed) {
+                    revealSafeNeighbors(r, c);
+                    revealed++;
+                    madeMove = true;
+                    break;
+                }
+            }
+            if (madeMove) break;
+        }
+
+        if (!madeMove) {
+            let randomCellFound = false;
+            while (!randomCellFound) {
+                const r = Math.floor(Math.random() * rows);
+                const c = Math.floor(Math.random() * cols);
+                const cell = gameBoard[r][c];
+                if (!cell.revealed && !cell.flagged) {
+                    if (cell.mine) {
+                        toggleFlag(r, c);
+                        flagged++;
+                    } else {
+                        revealCell(r, c);
+                        revealed++;
+                    }
+                    randomCellFound = true;
+                }
+            }
+        }
+
+        if (flagsPlaced > lastFlaggedCount) {
+            lastFlaggedCount = flagsPlaced;
+        }
+		
+        setTimeout(nextMove, 150);
+    }
+		
+	let noMovesLeft = true;
+	
+	for (let r = 0; r < rows; r++) {
+		for (let c = 0; c < cols; c++) {
+			const cell = gameBoard[r][c];
+			if (!cell.revealed && !cell.flagged) {
+				noMovesLeft = false;
+				break;
+			}
+		}
+		if (!noMovesLeft) break;
+	}
+
+	if (noMovesLeft) {
+		console.log("Aucun mouvement supplémentaire possible. Le jeu est bloqué.");
+		checkWin();
+		return;
+	}
+	else {
+		nextMove();
+	}
+}
+
+function revealSafeNeighbors(row, col) {
+    const directions = [
+        [-1,-1], [-1,0], [-1,1],
+        [0, -1],          [0, 1],
+        [1, -1], [1, 0], [1, 1]
+    ];
+
+    const cell = gameBoard[row][col];
+    for (const [dr, dc] of directions) {
+        const nr = row + dr;
+        const nc = col + dc;
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+            const neighbor = gameBoard[nr][nc];
+            if (!neighbor.revealed && !neighbor.flagged) {
+                revealCell(nr, nc);
+            }
+        }
+    }
+}

@@ -13,8 +13,8 @@ function initializeGame() {
 	const gridSizeInput = document.getElementById('gridSize');
 	const mineCountInput = document.getElementById('mineCount');
 
-	rows = cols = parseInt(gridSizeInput.value);
-	minesCount = parseInt(mineCountInput.value);
+	rows = cols = Math.max(1, parseInt(gridSizeInput.value));
+	minesCount = Math.min(rows*cols, parseInt(mineCountInput.value));
 
 	game.innerHTML = '';
 	gameBoard = [];

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Démineur</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Démineur</h1>
+    <div id="stats">
+        <span id="time">Temps : 0.00s</span>
+        <span id="bestTime">Meilleur temps : -</span>
+    </div>
+    <div id="controls">
+        <label for="gridSize">Taille de la grille :</label>
+        <input type="number" id="gridSize" value="10" min="5" max="30">
+        <label for="mineCount">Nombre de mines :</label>
+        <input type="number" id="mineCount" value="20" min="1">
+    </div>
+    <div id="game"></div>
+    <button onclick="initializeGame()">Recommencer</button>
+
+	<script src="script.js"></script>
+</body>
+</html>
